@@ -3,32 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VitrelosTia - Cloud Sync</title>
+    <title>VitrelosTia - Full Power</title>
+    
     <script>
         window.MathJax = { tex: { inlineMath: [['$', '$']], displayMath: [['$$', '$$']] } };
     </script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
     <style>
         body { font-family: 'Segoe UI', "Microsoft YaHei", sans-serif; margin: 0; padding: 20px; background-color: #f0f0f0; background-size: cover; background-position: center; background-attachment: fixed; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
         .container { max-width: 800px; width: 100%; background-color: rgba(255, 255, 255, 0.94); padding: 30px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); box-sizing: border-box; }
-        h2 { color: #222; text-align: left; margin-bottom: 25px; letter-spacing: 2px; }
         
-        /* 管理员面板 - 默认隐藏 */
-        #adminPanel { display: none; background: #fff; padding: 20px; border: 2px solid #333; border-radius: 8px; margin-bottom: 20px; }
-        textarea { width: 100%; height: 100px; margin: 10px 0; padding: 10px; box-sizing: border-box; border-radius: 6px; border: 1px solid #ddd; font-family: inherit; }
+        #adminPanel { display: none; background: #fff; padding: 20px; border: 1px solid #333; border-radius: 8px; margin-bottom: 20px; }
+        textarea { width: 100%; height: 120px; margin: 10px 0; padding: 10px; box-sizing: border-box; border-radius: 6px; border: 1px solid #ddd; font-family: inherit; font-size: 14px; outline: none; }
         
-        .controls { display: flex; gap: 10px; align-items: center; margin-bottom: 15px; }
-        button { background: #333; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; }
+        .controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 15px; }
+        .priority-input { display: flex; align-items: center; gap: 5px; font-size: 14px; color: #666; }
+        .priority-input input { width: 45px; padding: 5px; border: 1px solid #ddd; border-radius: 4px; text-align: center; }
+        
+        button { background: #333; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 13px; }
         button:hover { background: #555; }
         
+        .bg-settings { display: flex; gap: 5px; margin-left: auto; }
+        .bg-settings input { padding: 5px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; width: 100px; }
+
+        .filter-bar { margin-bottom: 20px; padding: 12px; background: rgba(0,0,0,0.03); border-radius: 8px; display: flex; align-items: center; gap: 10px; font-size: 13px; }
+
+        /* 列表项 */
         .note-item { background: white; border: 1px solid #eee; border-radius: 8px; padding: 20px; margin-bottom: 15px; position: relative; }
         .p-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-right: 10px; background: #eee; }
+        .p-1 { background: #ff4d4d; color: white; }
         .type-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; background: #e3f2fd; color: #1976d2; margin-right: 10px; }
-        .note-content { line-height: 1.6; color: #333; }
+        .note-content { line-height: 1.6; color: #333; margin-top: 10px; }
+        .note-content blockquote { border-left: 4px solid #ddd; padding-left: 15px; color: #666; margin: 10px 0; font-style: italic; }
+
+        /* 操作按钮 */
+        .note-actions { display: none; gap: 8px; margin-top: 15px; justify-content: flex-end; border-top: 1px solid #f9f9f9; padding-top: 10px; }
+        .action-btn { padding: 4px 10px; font-size: 11px; background-color: #f8f8f8; border: 1px solid #eee; color: #666; }
         
-        /* 底部登录入口 - 极隐蔽 */
-        #loginBtn { margin-top: 50px; color: #ccc; cursor: pointer; font-size: 10px; }
+        #loginBtn { margin-top: 50px; color: #ddd; cursor: pointer; font-size: 10px; transition: 0.3s; }
+        #loginBtn:hover { color: #888; }
     </style>
 </head>
 <body>
@@ -37,124 +52,178 @@
         <h1>VitrelosTia</h1>
 
         <div id="adminPanel">
-            <div class="tag-selector">
-                Tag: <select id="noteTag"><option>Diary</option><option>Writing</option><option>Note</option></select>
-                Value: <input type="number" id="priorityNum" value="3" style="width:40px">
+            <div class="controls">
+                <span>Tag:</span>
+                <select id="noteTag">
+                    <option>Diary</option><option>Writing</option><option>Note</option><option>Task</option>
+                </select>
+                <div class="priority-input">
+                    <span>P:</span><input type="number" id="priorityNum" value="3" min="1">
+                </div>
+                <div class="bg-settings">
+                    <input type="text" id="bgUrl" placeholder="BG URL">
+                    <button onclick="changeBg()" style="background:#888; padding: 5px 8px;">Apply</button>
+                </div>
             </div>
-            <textarea id="noteContent" placeholder="Content (Markdown/LaTeX support)"></textarea>
+            <textarea id="noteContent" placeholder="Markdown & LaTeX support..."></textarea>
             <button onclick="saveToCloud()" id="saveBtn">Cloud Save</button>
             <button onclick="logout()" style="background:#888">Logout</button>
         </div>
 
-        <div id="noteList">Loading...</div>
+        <div class="filter-bar">
+            <span>Filter:</span>
+            <input type="date" id="dateFilter" onchange="renderNotes()">
+            <button onclick="resetFilter()" style="padding: 4px 8px; background:#888">Show All</button>
+        </div>
+
+        <div id="noteList">Fetching cloud data...</div>
         
         <div id="loginBtn" onclick="login()">Admin Login</div>
     </div>
 
     <script>
-        // 配置你的 GitHub 信息
+        // --- 请配置这里 ---
         const USER = 'VitrelosTia'; 
         const REPO = 'suzq';
         const FILE_PATH = 'data.json';
         
         let allNotes = [];
-        let githubToken = localStorage.getItem('gh_token');
-        let fileSha = ''; // GitHub 修改文件需要这个“指纹”
+        let editingId = null;
+        let fileSha = ''; 
+        const githubToken = localStorage.getItem('gh_token');
 
         document.addEventListener('DOMContentLoaded', () => {
-            if (githubToken) document.getElementById('adminPanel').style.display = 'block';
+            if (githubToken) {
+                document.getElementById('adminPanel').style.display = 'block';
+            }
             fetchData();
+            loadBg();
         });
 
-        // 核心：读取云端数据
         async function fetchData() {
             const url = `https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}`;
             try {
-                const res = await fetch(url, { cache: "no-store" });
+                const res = await fetch(url, { headers: githubToken ? { 'Authorization': `token ${githubToken}` } : {}, cache: "no-store" });
                 const data = await res.json();
-                fileSha = data.sha; // 保存指纹
-                allNotes = JSON.parse(decodeURIComponent(escape(atob(data.content)))); // 解码 Base64
+                fileSha = data.sha;
+                allNotes = JSON.parse(decodeURIComponent(escape(atob(data.content))));
                 renderNotes();
             } catch (e) {
-                document.getElementById('noteList').innerText = 'Error loading data. Check console.';
+                document.getElementById('noteList').innerText = 'Load Error. Check data.json.';
             }
         }
 
-        // 核心：同步到云端
         async function saveToCloud() {
-            if (!githubToken) return alert('Please login first');
+            if (!githubToken) return;
             const content = document.getElementById('noteContent').value.trim();
+            const priority = parseInt(document.getElementById('priorityNum').value);
+            const tag = document.getElementById('noteTag').value;
             if (!content) return;
 
             const saveBtn = document.getElementById('saveBtn');
             saveBtn.innerText = 'Syncing...';
             saveBtn.disabled = true;
 
-            // 构建新数据
-            const newNote = {
-                id: Date.now(),
-                content: content,
-                priority: parseInt(document.getElementById('priorityNum').value),
-                tag: document.getElementById('noteTag').value,
-                date: new Date().toLocaleString()
-            };
-            allNotes.unshift(newNote);
+            if (editingId) {
+                allNotes = allNotes.map(n => n.id === editingId ? { ...n, content, priority, tag } : n);
+                editingId = null;
+                saveBtn.innerText = 'Cloud Save';
+            } else {
+                allNotes.unshift({ id: Date.now(), content, priority, tag, date: new Date().toLocaleString() });
+            }
 
-            // 推送到 GitHub API
+            await syncToGitHub();
+            document.getElementById('noteContent').value = '';
+            saveBtn.disabled = false;
+            saveBtn.innerText = 'Cloud Save';
+        }
+
+        async function deleteNote(id) {
+            if (!confirm('Delete this note from Cloud?')) return;
+            allNotes = allNotes.filter(n => n.id !== id);
+            await syncToGitHub();
+        }
+
+        function editNote(id) {
+            const note = allNotes.find(n => n.id === id);
+            if (!note) return;
+            document.getElementById('noteContent').value = note.content;
+            document.getElementById('priorityNum').value = note.priority;
+            document.getElementById('noteTag').value = note.tag;
+            document.getElementById('saveBtn').innerText = 'Update Cloud';
+            editingId = id;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function syncToGitHub() {
             const url = `https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}`;
             const body = {
-                message: "Update diary via web",
-                content: btoa(unescape(encodeURIComponent(JSON.stringify(allNotes, null, 2)))), // 编码为 Base64
+                message: "Cloud update via VitrelosTia",
+                content: btoa(unescape(encodeURIComponent(JSON.stringify(allNotes, null, 2)))),
                 sha: fileSha
             };
-
             const res = await fetch(url, {
                 method: 'PUT',
                 headers: { 'Authorization': `token ${githubToken}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify(body)
             });
-
             if (res.ok) {
-                alert('Cloud Sync Success!');
-                document.getElementById('noteContent').value = '';
-                fetchData(); // 重新加载
+                const resData = await res.json();
+                fileSha = resData.content.sha; // 更新SHA防止冲突
+                renderNotes();
             } else {
-                alert('Sync Failed. Check Token.');
+                alert('Sync Error. Check Token permissions.');
             }
-            saveBtn.innerText = 'Cloud Save';
-            saveBtn.disabled = false;
         }
 
         function renderNotes() {
-            allNotes.sort((a, b) => (a.priority - b.priority) || (b.id - a.id));
-            document.getElementById('noteList').innerHTML = allNotes.map(n => `
+            const listDiv = document.getElementById('noteList');
+            const filterDate = document.getElementById('dateFilter').value;
+            let displayList = [...allNotes];
+
+            if (filterDate) {
+                displayList = displayList.filter(n => n.date.includes(filterDate));
+            }
+            displayList.sort((a, b) => (a.priority - b.priority) || (b.id - a.id));
+
+            listDiv.innerHTML = displayList.map(n => `
                 <div class="note-item">
-                    <div style="font-size:12px; color:#999; margin-bottom:10px;">
-                        <span class="p-tag">P-${n.priority}</span>
+                    <div style="font-size:12px; color:#999;">
+                        <span class="p-tag ${n.priority==1?'p-1':''}">P-${n.priority}</span>
                         <span class="type-tag">${n.tag}</span>${n.date}
                     </div>
                     <div class="note-content">${marked.parse(n.content)}</div>
+                    <div class="note-actions" style="display: ${githubToken ? 'flex' : 'none'}">
+                        <button class="action-btn" onclick="editNote(${n.id})">Edit</button>
+                        <button class="action-btn" style="color:#ff4d4d" onclick="deleteNote(${n.id})">Delete</button>
+                    </div>
                 </div>
             `).join('');
             if (window.MathJax) window.MathJax.typeset();
         }
 
-        function login() {
-            const token = prompt("Enter GitHub Token:");
-            if (token) {
-                localStorage.setItem('gh_token', token);
-                location.reload();
+        function resetFilter() { document.getElementById('dateFilter').value = ''; renderNotes(); }
+
+        function changeBg() {
+            const url = document.getElementById('bgUrl').value;
+            document.body.style.backgroundImage = `url('${url}')`;
+            localStorage.setItem('myDiaryBg', url);
+        }
+
+        function loadBg() {
+            const savedBg = localStorage.getItem('myDiaryBg');
+            if(savedBg) {
+                document.body.style.backgroundImage = `url('${savedBg}')`;
+                document.getElementById('bgUrl').value = savedBg;
             }
         }
 
-        function logout() {
-            localStorage.removeItem('gh_token');
-            location.reload();
+        function login() {
+            const token = prompt("Enter GitHub Token:");
+            if (token) { localStorage.setItem('gh_token', token); location.reload(); }
         }
+
+        function logout() { localStorage.removeItem('gh_token'); location.reload(); }
     </script>
 </body>
 </html>
-
-
-
-
