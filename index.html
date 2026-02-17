@@ -2,36 +2,213 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>我的超实用工具箱</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的极简日记</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
-        .card { background: white; color: #333; padding: 2rem; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center; width: 300px; }
-        h1 { margin-bottom: 1rem; color: #4a4a4a; }
-        input { width: 80%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 5px; }
-        button { background: #764ba2; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; transition: 0.3s; }
-        button:hover { background: #5a368c; }
-        #result { margin-top: 20px; font-weight: bold; font-size: 1.2rem; color: #e91e63; }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8f8f8; /* 浅灰色背景 */
+            color: #333; /* 深灰色文字 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background-color: #ffffff; /* 白色内容区背景 */
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            box-sizing: border-box; /* 确保内边距和边框包含在宽度内 */
+        }
+        h1 {
+            color: #222; /* 更深的标题 */
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+            resize: vertical; /* 允许垂直调整大小 */
+            box-sizing: border-box;
+            background-color: #fdfdfd;
+            color: #444;
+        }
+        button {
+            background-color: #333; /* 黑色按钮 */
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: background-color 0.2s ease;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #555; /* 鼠标悬停变深 */
+        }
+        .note-list {
+            margin-top: 40px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        .note-item {
+            background-color: #fafafa; /* 日记项背景 */
+            border: 1px solid #eee;
+            border-radius: 6px;
+            padding: 18px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+            position: relative;
+        }
+        .note-item h2 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #444;
+            font-size: 1.4em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .note-item p {
+            line-height: 1.6;
+            color: #555;
+            white-space: pre-wrap; /* 保留换行和空格 */
+        }
+        .note-item .date {
+            font-size: 0.9em;
+            color: #888;
+        }
+        .delete-btn {
+            background-color: #dc3545; /* 红色删除按钮 */
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.2s ease;
+            position: absolute;
+            top: 15px;
+            right: 15px;
+        }
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            button {
+                width: 100%;
+                margin-top: 10px;
+                margin-right: 0;
+            }
+            .delete-btn {
+                position: static; /* 小屏幕下删除按钮显示在内容下方 */
+                margin-top: 10px;
+                width: auto;
+            }
+        }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h1>今天吃什么？</h1>
-    <p>输入选项（用逗号隔开）</p>
-    <input type="text" id="options" value="黄焖鸡, 萨莉亚, 疯狂星期四, 兰州拉面, 减脂餐">
-    <br>
-    <button onclick="decide()">帮我选一个！</button>
-    <div id="result"></div>
-</div>
+    <div class="container">
+        <h1>VitrelosTia Diary</h1>
 
-<script>
-    function decide() {
-        const input = document.getElementById('options').value;
-        const list = input.split(',').map(item => item.trim());
-        const random = list[Math.floor(Math.random() * list.length)];
-        document.getElementById('result').innerText = "上天决定了： " + random;
-    }
-</script>
+        <textarea id="noteContent" placeholder="今天发生了什么？"></textarea>
+        <button onclick="saveNote()">保存日记</button>
+        <button onclick="clearNotes()">清空所有日记</button>
+
+        <div class="note-list" id="noteList">
+            </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', loadNotes); // 页面加载完成后自动加载日记
+
+        function saveNote() {
+            const noteContent = document.getElementById('noteContent').value.trim(); // 获取并去除前后空格
+            if (!noteContent) {
+                alert('日记内容不能为空哦！');
+                return;
+            }
+
+            let notes = JSON.parse(localStorage.getItem('myJournalNotes') || '[]'); // 从本地存储获取日记，如果没有则是一个空数组
+            const now = new Date();
+            const dateString = now.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+            const newNote = {
+                id: Date.now(), // 用时间戳作为唯一ID
+                content: noteContent,
+                date: dateString
+            };
+
+            notes.unshift(newNote); // 把新日记放到最前面
+            localStorage.setItem('myJournalNotes', JSON.stringify(notes)); // 保存回本地存储
+
+            document.getElementById('noteContent').value = ''; // 清空输入框
+            loadNotes(); // 重新加载日记列表
+        }
+
+        function loadNotes() {
+            const noteListDiv = document.getElementById('noteList');
+            noteListDiv.innerHTML = ''; // 清空现有列表
+
+            let notes = JSON.parse(localStorage.getItem('myJournalNotes') || '[]');
+
+            if (notes.length === 0) {
+                noteListDiv.innerHTML = '<p style="text-align: center; color: #888;">还没有日记，快写第一篇吧！</p>';
+                return;
+            }
+
+            notes.forEach(note => {
+                const noteItem = document.createElement('div');
+                noteItem.className = 'note-item';
+                noteItem.innerHTML = `
+                    <h2>
+                        <span>${note.date}</span>
+                    </h2>
+                    <p>${note.content}</p>
+                    <button class="delete-btn" onclick="deleteNote(${note.id})">删除</button>
+                `;
+                noteListDiv.appendChild(noteItem);
+            });
+        }
+
+        function deleteNote(idToDelete) {
+            if (!confirm('确定要删除这篇日记吗？')) {
+                return; // 如果用户点击取消，则不执行删除
+            }
+            let notes = JSON.parse(localStorage.getItem('myJournalNotes') || '[]');
+            notes = notes.filter(note => note.id !== idToDelete); // 过滤掉要删除的日记
+            localStorage.setItem('myJournalNotes', JSON.stringify(notes)); // 保存回本地存储
+            loadNotes(); // 重新加载日记列表
+        }
+
+        function clearNotes() {
+            if (confirm('确定要清空所有日记吗？此操作不可撤销！')) {
+                localStorage.removeItem('myJournalNotes'); // 移除所有日记
+                loadNotes(); // 重新加载（会显示“没有日记”）
+            }
+        }
+    </script>
 
 </body>
 </html>
