@@ -1,5 +1,13 @@
 [
   {
+    "id": 1771334201428,
+    "content": "Yesterday is history, and tomorrow is a mystery, but today is a gift.",
+    "priority": 1,
+    "tag": "Diary",
+    "date": "2026/2/17 21:16:41",
+    "isoDate": "2026-02-17"
+  },
+  {
     "id": 1771292538282,
     "content": "$\\frac{x^2}{a^2}+\\frac{y^2}{b^2}=1$",
     "priority": 3,
