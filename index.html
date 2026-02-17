@@ -3,212 +3,233 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的极简日记</title>
+    <title>VitrelosTia - Markdown & LaTeX</title>
+    
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$']] },
+            options: { processHtmlClass: 'note-content' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
     <style>
         body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f8f8f8; /* 浅灰色背景 */
-            color: #333; /* 深灰色文字 */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            font-family: 'Segoe UI', "Microsoft YaHei", sans-serif;
+            margin: 0; padding: 20px;
+            background-color: #f0f0f0; background-size: cover; background-position: center; background-attachment: fixed;
+            min-height: 100vh; display: flex; flex-direction: column; align-items: center; transition: background 0.5s ease;
         }
+
         .container {
-            max-width: 800px;
-            width: 100%;
-            background-color: #ffffff; /* 白色内容区背景 */
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-            box-sizing: border-box; /* 确保内边距和边框包含在宽度内 */
-        }
-        h1 {
-            color: #222; /* 更深的标题 */
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 2.2em;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 15px;
-        }
-        textarea {
-            width: 100%;
-            height: 150px;
-            padding: 15px;
-            margin-bottom: 20px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 1em;
-            resize: vertical; /* 允许垂直调整大小 */
+            max-width: 800px; width: 100%;
+            background-color: rgba(255, 255, 255, 0.94);
+            padding: 30px; border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             box-sizing: border-box;
-            background-color: #fdfdfd;
-            color: #444;
         }
-        button {
-            background-color: #333; /* 黑色按钮 */
-            color: white;
-            padding: 12px 25px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1.1em;
-            transition: background-color 0.2s ease;
-            margin-right: 10px;
+
+        h2 { color: #222; text-align: center; margin-bottom: 25px; letter-spacing: 2px; }
+
+        /* 标签选择 */
+        .tag-selector { margin-bottom: 10px; display: flex; gap: 10px; align-items: center; }
+        .tag-selector select { padding: 5px; border-radius: 4px; border: 1px solid #ddd; outline: none; }
+
+        textarea {
+            width: 100%; height: 120px; padding: 15px; margin-bottom: 15px;
+            border: 1px solid #ddd; border-radius: 8px;
+            font-family: inherit; font-size: 1em; line-height: 1.6;
+            color: #333; resize: vertical; box-sizing: border-box; outline: none;
         }
-        button:hover {
-            background-color: #555; /* 鼠标悬停变深 */
+
+        .controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 20px; }
+        .priority-input { display: flex; align-items: center; gap: 5px; font-size: 14px; color: #666; }
+        .priority-input input { width: 45px; padding: 5px; border: 1px solid #ddd; border-radius: 4px; text-align: center; }
+
+        button { background-color: #333; color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-size: 14px; transition: 0.3s; }
+        button:hover { background-color: #555; }
+        
+        .bg-settings { display: flex; gap: 5px; margin-left: auto; }
+        .bg-settings input { padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; width: 100px; }
+
+        .filter-bar { margin-top: 20px; padding: 15px; background: rgba(0,0,0,0.03); border-radius: 8px; display: flex; align-items: center; gap: 15px; font-size: 14px; }
+        .filter-bar input[type="date"] { padding: 5px; border: 1px solid #ddd; border-radius: 4px; }
+
+        /* Markdown 样式微调 */
+        .note-content blockquote {
+            border-left: 4px solid #ddd;
+            padding-left: 15px;
+            color: #666;
+            margin: 10px 0;
+            font-style: italic;
         }
-        .note-list {
-            margin-top: 40px;
-            border-top: 1px solid #eee;
-            padding-top: 20px;
-        }
-        .note-item {
-            background-color: #fafafa; /* 日记项背景 */
-            border: 1px solid #eee;
-            border-radius: 6px;
-            padding: 18px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-            position: relative;
-        }
-        .note-item h2 {
-            margin-top: 0;
-            margin-bottom: 10px;
-            color: #444;
-            font-size: 1.4em;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .note-item p {
-            line-height: 1.6;
-            color: #555;
-            white-space: pre-wrap; /* 保留换行和空格 */
-        }
-        .note-item .date {
-            font-size: 0.9em;
-            color: #888;
-        }
-        .delete-btn {
-            background-color: #dc3545; /* 红色删除按钮 */
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.9em;
-            transition: background-color 0.2s ease;
-            position: absolute;
-            top: 15px;
-            right: 15px;
-        }
-        .delete-btn:hover {
-            background-color: #c82333;
-        }
-        @media (max-width: 600px) {
-            .container {
-                padding: 20px;
-            }
-            h1 {
-                font-size: 1.8em;
-            }
-            button {
-                width: 100%;
-                margin-top: 10px;
-                margin-right: 0;
-            }
-            .delete-btn {
-                position: static; /* 小屏幕下删除按钮显示在内容下方 */
-                margin-top: 10px;
-                width: auto;
-            }
-        }
+        .note-content code { background: #eee; padding: 2px 4px; border-radius: 4px; }
+        .note-content pre { background: #f8f8f8; padding: 10px; border-radius: 8px; overflow-x: auto; }
+        .note-content img { max-width: 100%; border-radius: 8px; }
+
+        .note-list { margin-top: 20px; }
+        .note-item { background-color: white; border: 1px solid #eee; border-radius: 8px; padding: 20px; margin-bottom: 15px; position: relative; transition: 0.3s; }
+        .p-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-right: 10px; }
+        .p-1 { background: #ff4d4d; color: white; }
+        .p-2 { background: #ffaa00; color: white; }
+        .p-default { background: #eee; color: #888; }
+        .type-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; background: #e3f2fd; color: #1976d2; margin-right: 10px; }
+        .note-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .note-date { color: #999; font-size: 12px; }
+        .note-actions { display: flex; gap: 8px; margin-top: 15px; justify-content: flex-end; }
+        .action-btn { padding: 4px 10px; font-size: 11px; background-color: #f8f8f8; border: 1px solid #eee; border-radius: 4px; color: #666; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>VitrelosTia Diary</h1>
+        <h1>VitrelosTia</h1>
 
-        <textarea id="noteContent" placeholder="今天发生了什么？"></textarea>
-        <button onclick="saveNote()">保存日记</button>
-        <button onclick="clearNotes()">清空所有日记</button>
+        <div class="tag-selector">
+            <span>Tag:</span>
+            <select id="noteTag">
+                <option value="Diary">Diary</option>
+                <option value="Writing">Writing</option>
+                <option value="Note">Note</option>
+                <option value="Task">Task</option>
+            </select>
+        </div>
 
-        <div class="note-list" id="noteList">
+        <textarea id="noteContent" placeholder="Supports Markdown (> Quote, **Bold**) & LaTeX ($E=mc^2$)"></textarea>
+        
+        <div class="controls">
+            <div class="priority-input">
+                <span>Value:</span>
+                <input type="number" id="priorityNum" value="3" min="1" max="99">
             </div>
+            <button id="saveBtn" onclick="saveNote()">Save</button>
+            
+            <div class="bg-settings">
+                <input type="text" id="bgUrl" placeholder="Background">
+                <button onclick="changeBg()" style="background:#888; padding: 8px 10px; font-size: 12px;">Submit</button>
+            </div>
+        </div>
+
+        <div class="filter-bar">
+            <span>Filter by Date:</span>
+            <input type="date" id="dateFilter" onchange="loadNotes()">
+            <button onclick="resetFilter()" style="padding: 5px 10px; font-size: 12px; background:#888;">Show All</button>
+        </div>
+
+        <div id="noteList" class="note-list"></div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', loadNotes); // 页面加载完成后自动加载日记
+        let editingId = null;
+
+        document.addEventListener('DOMContentLoaded', () => { loadNotes(); loadBg(); });
 
         function saveNote() {
-            const noteContent = document.getElementById('noteContent').value.trim(); // 获取并去除前后空格
-            if (!noteContent) {
-                alert('日记内容不能为空哦！');
-                return;
+            const content = document.getElementById('noteContent').value.trim();
+            const priority = parseInt(document.getElementById('priorityNum').value) || 3;
+            const tag = document.getElementById('noteTag').value;
+            if (!content) return alert('Content cannot be empty');
+
+            let notes = JSON.parse(localStorage.getItem('myJournalNotes') || '[]');
+            const now = new Date();
+            
+            if (editingId) {
+                notes = notes.map(n => n.id === editingId ? { ...n, content, priority, tag } : n);
+                editingId = null;
+                document.getElementById('saveBtn').innerText = 'Save';
+            } else {
+                notes.unshift({ 
+                    id: Date.now(), 
+                    content, 
+                    priority, 
+                    tag,
+                    date: now.toLocaleString(),
+                    dateISO: now.toISOString().split('T')[0]
+                });
             }
 
-            let notes = JSON.parse(localStorage.getItem('myJournalNotes') || '[]'); // 从本地存储获取日记，如果没有则是一个空数组
-            const now = new Date();
-            const dateString = now.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-
-            const newNote = {
-                id: Date.now(), // 用时间戳作为唯一ID
-                content: noteContent,
-                date: dateString
-            };
-
-            notes.unshift(newNote); // 把新日记放到最前面
-            localStorage.setItem('myJournalNotes', JSON.stringify(notes)); // 保存回本地存储
-
-            document.getElementById('noteContent').value = ''; // 清空输入框
-            loadNotes(); // 重新加载日记列表
+            localStorage.setItem('myJournalNotes', JSON.stringify(notes));
+            document.getElementById('noteContent').value = '';
+            document.getElementById('priorityNum').value = '3';
+            loadNotes();
         }
 
         function loadNotes() {
-            const noteListDiv = document.getElementById('noteList');
-            noteListDiv.innerHTML = ''; // 清空现有列表
-
+            const listDiv = document.getElementById('noteList');
+            const filterDate = document.getElementById('dateFilter').value;
             let notes = JSON.parse(localStorage.getItem('myJournalNotes') || '[]');
+            
+            if (filterDate) notes = notes.filter(n => n.dateISO === filterDate);
+            notes.sort((a, b) => (a.priority - b.priority) || (b.id - a.id));
 
-            if (notes.length === 0) {
-                noteListDiv.innerHTML = '<p style="text-align: center; color: #888;">还没有日记，快写第一篇吧！</p>';
-                return;
-            }
-
-            notes.forEach(note => {
-                const noteItem = document.createElement('div');
-                noteItem.className = 'note-item';
-                noteItem.innerHTML = `
-                    <h2>
-                        <span>${note.date}</span>
-                    </h2>
-                    <p>${note.content}</p>
-                    <button class="delete-btn" onclick="deleteNote(${note.id})">删除</button>
+            listDiv.innerHTML = notes.map(n => {
+                let pClass = n.priority == 1 ? 'p-1' : (n.priority == 2 ? 'p-2' : 'p-default');
+                // 使用 marked 转换内容
+                const renderedContent = marked.parse(n.content);
+                
+                return `
+                <div class="note-item">
+                    <div class="note-header">
+                        <span class="note-date">
+                            <span class="p-tag ${pClass}">P-${n.priority}</span>
+                            <span class="type-tag">${n.tag || 'Diary'}</span>
+                            ${n.date}
+                        </span>
+                    </div>
+                    <div class="note-content">${renderedContent}</div>
+                    <div class="note-actions">
+                        <button class="action-btn" onclick="editNote(${n.id})">Edit</button>
+                        <button class="action-btn" style="color:#ff4d4d" onclick="deleteNote(${n.id})">Delete</button>
+                    </div>
+                </div>
                 `;
-                noteListDiv.appendChild(noteItem);
-            });
+            }).join('') || '<p style="text-align:center;color:#999;margin-top:20px;">No records found.</p>';
+            
+            // 渲染 LaTeX
+            if (window.MathJax && window.MathJax.typeset) window.MathJax.typeset();
         }
 
-        function deleteNote(idToDelete) {
-            if (!confirm('确定要删除这篇日记吗？')) {
-                return; // 如果用户点击取消，则不执行删除
-            }
+        function resetFilter() {
+            document.getElementById('dateFilter').value = '';
+            loadNotes();
+        }
+
+        function editNote(id) {
             let notes = JSON.parse(localStorage.getItem('myJournalNotes') || '[]');
-            notes = notes.filter(note => note.id !== idToDelete); // 过滤掉要删除的日记
-            localStorage.setItem('myJournalNotes', JSON.stringify(notes)); // 保存回本地存储
-            loadNotes(); // 重新加载日记列表
+            const note = notes.find(n => n.id === id);
+            if(note) {
+                document.getElementById('noteContent').value = note.content;
+                document.getElementById('priorityNum').value = note.priority;
+                document.getElementById('noteTag').value = note.tag || 'Diary';
+                document.getElementById('saveBtn').innerText = 'Update';
+                editingId = id;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
         }
 
-        function clearNotes() {
-            if (confirm('确定要清空所有日记吗？此操作不可撤销！')) {
-                localStorage.removeItem('myJournalNotes'); // 移除所有日记
-                loadNotes(); // 重新加载（会显示“没有日记”）
+        function deleteNote(id) {
+            if(confirm('Are you sure?')) {
+                let notes = JSON.parse(localStorage.getItem('myJournalNotes') || '[]');
+                localStorage.setItem('myJournalNotes', JSON.stringify(notes.filter(n => n.id !== id)));
+                loadNotes();
+            }
+        }
+
+        function changeBg() {
+            const url = document.getElementById('bgUrl').value;
+            document.body.style.backgroundImage = `url('${url}')`;
+            localStorage.setItem('myDiaryBg', url);
+        }
+
+        function loadBg() {
+            const savedBg = localStorage.getItem('myDiaryBg');
+            if(savedBg) {
+                document.body.style.backgroundImage = `url('${savedBg}')`;
+                document.getElementById('bgUrl').value = savedBg;
             }
         }
     </script>
-
 </body>
 </html>
