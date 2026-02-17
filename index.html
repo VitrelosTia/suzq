@@ -15,7 +15,7 @@
         body { font-family: 'Segoe UI', "Microsoft YaHei", sans-serif; margin: 0; padding: 20px; background-color: #f0f0f0; background-size: cover; background-position: center; background-attachment: fixed; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
         .container { max-width: 800px; width: 100%; background-color: rgba(255, 255, 255, 0.94); padding: 30px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); box-sizing: border-box; }
         
-        h1 { margin-bottom: 5px; }
+        h1 { margin-bottom: 5px; text-align: left; }
         .subtitle { text-align: left; color: #888; font-size: 14px; margin-top: 0; margin-bottom: 25px; padding-left: 5px; font-style: italic; }
 
         #adminPanel { display: none; background: #fff; padding: 20px; border: 1px solid #333; border-radius: 8px; margin-bottom: 20px; }
@@ -25,13 +25,15 @@
         .priority-input { display: flex; align-items: center; gap: 5px; font-size: 14px; color: #666; }
         .priority-input input { width: 45px; padding: 5px; border: 1px solid #ddd; border-radius: 4px; text-align: center; }
         
-        button { background: #333; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 13px; }
+        button { background: #333; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 13px; transition: 0.2s; }
         button:hover { background: #555; }
         
         .bg-settings { display: flex; gap: 5px; margin-left: auto; }
         .bg-settings input { padding: 5px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; width: 100px; }
 
-        .filter-bar { margin-bottom: 20px; padding: 12px; background: rgba(0,0,0,0.03); border-radius: 8px; display: flex; align-items: center; gap: 10px; font-size: 13px; }
+        .filter-bar { margin-bottom: 20px; padding: 12px; background: rgba(0,0,0,0.03); border-radius: 8px; display: flex; flex-wrap: wrap; align-items: center; gap: 15px; font-size: 13px; }
+        .filter-group { display: flex; align-items: center; gap: 8px; }
+        select, input[type="date"] { padding: 4px; border-radius: 4px; border: 1px solid #ddd; outline: none; }
 
         /* 列表项 */
         .note-item { background: white; border: 1px solid #eee; border-radius: 8px; padding: 20px; margin-bottom: 15px; position: relative; }
@@ -41,7 +43,6 @@
         .note-content { line-height: 1.6; color: #333; margin-top: 10px; }
         .note-content blockquote { border-left: 4px solid #ddd; padding-left: 15px; color: #666; margin: 10px 0; font-style: italic; }
 
-        /* 操作按钮 */
         .note-actions { display: none; gap: 8px; margin-top: 15px; justify-content: flex-end; border-top: 1px solid #f9f9f9; padding-top: 10px; }
         .action-btn { padding: 4px 10px; font-size: 11px; background-color: #f8f8f8; border: 1px solid #eee; color: #666; }
         
@@ -59,7 +60,7 @@
             <div class="controls">
                 <span>Tag:</span>
                 <select id="noteTag">
-                    <option>Diary</option><option>Writing</option><option>Note</option><option>Task</option>
+                    <option>Diary</option><option>Note</option><option>Task</option>
                 </select>
                 <div class="priority-input">
                     <span>P:</span><input type="number" id="priorityNum" value="3" min="1">
@@ -75,9 +76,18 @@
         </div>
 
         <div class="filter-bar">
-            <span>Filter:</span>
-            <input type="date" id="dateFilter" onchange="renderNotes()">
-            <button onclick="resetFilter()" style="padding: 4px 8px; background:#888">Show All</button>
+            <div class="filter-group">
+                <span>Date:</span>
+                <input type="date" id="dateFilter" onchange="renderNotes()">
+            </div>
+            <div class="filter-group">
+                <span>Tag:</span>
+                <select id="tagFilter" onchange="renderNotes()">
+                    <option value="">All Tags</option>
+                    <option>Diary</option><option>Writing</option><option>Note</option><option>Task</option>
+                </select>
+            </div>
+            <button onclick="resetFilter()" style="padding: 4px 8px; background:#888; margin-left: auto;">Reset</button>
         </div>
 
         <div id="noteList">Fetching cloud data...</div>
@@ -86,7 +96,6 @@
     </div>
 
     <script>
-        // --- 请配置这里 ---
         const USER = 'VitrelosTia'; 
         const REPO = 'suzq';
         const FILE_PATH = 'data.json';
@@ -97,9 +106,7 @@
         const githubToken = localStorage.getItem('gh_token');
 
         document.addEventListener('DOMContentLoaded', () => {
-            if (githubToken) {
-                document.getElementById('adminPanel').style.display = 'block';
-            }
+            if (githubToken) document.getElementById('adminPanel').style.display = 'block';
             fetchData();
             loadBg();
         });
@@ -107,7 +114,10 @@
         async function fetchData() {
             const url = `https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}`;
             try {
-                const res = await fetch(url, { headers: githubToken ? { 'Authorization': `token ${githubToken}` } : {}, cache: "no-store" });
+                const res = await fetch(url, { 
+                    headers: githubToken ? { 'Authorization': `token ${githubToken}` } : {}, 
+                    cache: "no-store" 
+                });
                 const data = await res.json();
                 fileSha = data.sha;
                 allNotes = JSON.parse(decodeURIComponent(escape(atob(data.content))));
@@ -128,12 +138,23 @@
             saveBtn.innerText = 'Syncing...';
             saveBtn.disabled = true;
 
+            const now = new Date();
+            // 存入一个 ISO 格式便于后续检索
+            const dateStr = now.toLocaleString();
+            const isoDate = now.toISOString().split('T')[0]; 
+
             if (editingId) {
                 allNotes = allNotes.map(n => n.id === editingId ? { ...n, content, priority, tag } : n);
                 editingId = null;
-                saveBtn.innerText = 'Cloud Save';
             } else {
-                allNotes.unshift({ id: Date.now(), content, priority, tag, date: new Date().toLocaleString() });
+                allNotes.unshift({ 
+                    id: Date.now(), 
+                    content, 
+                    priority, 
+                    tag, 
+                    date: dateStr,
+                    isoDate: isoDate // 专门用于检索
+                });
             }
 
             await syncToGitHub();
@@ -173,7 +194,7 @@
             });
             if (res.ok) {
                 const resData = await res.json();
-                fileSha = resData.content.sha; // 更新SHA防止冲突
+                fileSha = resData.content.sha;
                 renderNotes();
             } else {
                 alert('Sync Error. Check Token permissions.');
@@ -182,12 +203,24 @@
 
         function renderNotes() {
             const listDiv = document.getElementById('noteList');
-            const filterDate = document.getElementById('dateFilter').value;
+            const dateVal = document.getElementById('dateFilter').value;
+            const tagVal = document.getElementById('tagFilter').value;
+            
             let displayList = [...allNotes];
 
-            if (filterDate) {
-                displayList = displayList.filter(n => n.date.includes(filterDate));
+            // 修复后的检索逻辑
+            if (dateVal) {
+                displayList = displayList.filter(n => {
+                    // 优先匹配新版的 isoDate，如果没有则尝试解析旧版 date
+                    const nDate = n.isoDate || new Date(n.date).toISOString().split('T')[0];
+                    return nDate === dateVal;
+                });
             }
+
+            if (tagVal) {
+                displayList = displayList.filter(n => n.tag === tagVal);
+            }
+
             displayList.sort((a, b) => (a.priority - b.priority) || (b.id - a.id));
 
             listDiv.innerHTML = displayList.map(n => `
@@ -206,7 +239,11 @@
             if (window.MathJax) window.MathJax.typeset();
         }
 
-        function resetFilter() { document.getElementById('dateFilter').value = ''; renderNotes(); }
+        function resetFilter() { 
+            document.getElementById('dateFilter').value = ''; 
+            document.getElementById('tagFilter').value = '';
+            renderNotes(); 
+        }
 
         function changeBg() {
             const url = document.getElementById('bgUrl').value;
