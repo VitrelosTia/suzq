@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>我的超实用工具箱</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .card { background: white; color: #333; padding: 2rem; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center; width: 300px; }
+        h1 { margin-bottom: 1rem; color: #4a4a4a; }
+        input { width: 80%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        button { background: #764ba2; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #5a368c; }
+        #result { margin-top: 20px; font-weight: bold; font-size: 1.2rem; color: #e91e63; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>今天吃什么？</h1>
+    <p>输入选项（用逗号隔开）</p>
+    <input type="text" id="options" value="黄焖鸡, 萨莉亚, 疯狂星期四, 兰州拉面, 减脂餐">
+    <br>
+    <button onclick="decide()">帮我选一个！</button>
+    <div id="result"></div>
+</div>
+
+<script>
+    function decide() {
+        const input = document.getElementById('options').value;
+        const list = input.split(',').map(item => item.trim());
+        const random = list[Math.floor(Math.random() * list.length)];
+        document.getElementById('result').innerText = "上天决定了： " + random;
+    }
+</script>
+
+</body>
+</html>
