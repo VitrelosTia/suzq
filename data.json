@@ -1,5 +1,13 @@
 [
   {
+    "id": 1771853779971,
+    "content": "$$\n\\def\\opn{\\operatorname}\n$$\n\n$\\opn{mex}$",
+    "priority": 3,
+    "tag": "Diary",
+    "date": "2026/2/23 21:36:19",
+    "isoDate": "2026-02-23"
+  },
+  {
     "id": 1771334201428,
     "content": "Yesterday is history, and tomorrow is a mystery, but today is a gift.",
     "priority": 1,
