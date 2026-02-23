@@ -1,7 +1,7 @@
 [
   {
     "id": 1771853779971,
-    "content": "$$\n\\def\\opn{\\operatorname}\n$$\n\n$\\opn{mex}$",
+    "content": "$$\n\\def\\opn{\\operatorname}\n\\def\\OO{\\mathcal O}\n$$\n\n$\\opn{mex}$\n$$\n\\OO(n\\log n)\n$$",
     "priority": 3,
     "tag": "Diary",
     "date": "2026/2/23 21:36:19",
